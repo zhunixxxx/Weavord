@@ -218,6 +218,12 @@ export function createWordRepository(dbPath: string) {
       return this.updateWord(id, { proficiency: MAX_PROFICIENCY })
     },
 
+    unmarkWordAsMastered(id: string): boolean {
+      const word = this.getWord(id)
+      if (!word || !isMasteredWord(word.proficiency)) return false
+      return this.updateWord(id, { proficiency: 0 })
+    },
+
     deleteWord(id: string): boolean {
       const result = db.prepare('DELETE FROM words WHERE id = ?').run(id)
       return result.changes > 0

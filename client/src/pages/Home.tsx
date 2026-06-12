@@ -25,7 +25,7 @@ export default function HomePage() {
       to: '/study',
       icon: '✏️',
       title: '开始背诵',
-      desc: '四选一混合考查中/英/日释义',
+      desc: '混合考查中/英/日/西释义',
       color: 'from-orange-500 to-rose-600',
     },
     {
@@ -49,7 +49,7 @@ export default function HomePage() {
       <section className="rounded-3xl bg-gradient-to-br from-brand-600 to-indigo-700 p-6 text-white shadow-lg sm:p-8">
         <h2 className="text-2xl font-bold sm:text-3xl">Bienvenidos 👋</h2>
         <p className="mt-2 max-w-lg text-brand-100">
-          西班牙语背单词，支持中/英/日多语释义与多种练习模式。
+          西语背单词，支持中/英/日多语释义与多种练习模式。
         </p>
         <div className="mt-6 grid grid-cols-3 gap-3">
           {[

@@ -8,11 +8,10 @@ import { speakWord } from '../lib/audio'
 interface WordCardProps {
   word: Word
   onDelete?: (id: string) => void
-  onMarkMastered?: (id: string) => void
   compact?: boolean
 }
 
-export default function WordCard({ word, onDelete, onMarkMastered, compact }: WordCardProps) {
+export default function WordCard({ word, onDelete, compact }: WordCardProps) {
   const mastered = isMasteredWord(word.proficiency)
   const profColor = getProficiencyBadgeClass(word.proficiency)
 
@@ -35,36 +34,6 @@ export default function WordCard({ word, onDelete, onMarkMastered, compact }: Wo
             >
               {word.word}
             </Link>
-            {onMarkMastered && (
-              <button
-                type="button"
-                onClick={() => onMarkMastered(word.id)}
-                disabled={mastered}
-                className={`rounded-lg p-1 transition-colors ${
-                  mastered
-                    ? 'cursor-default text-amber-500'
-                    : 'text-slate-300 hover:bg-amber-50 hover:text-amber-500'
-                }`}
-                title={mastered ? '已是熟词' : '标记为熟词'}
-                aria-label={mastered ? '已是熟词' : '标记为熟词'}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill={mastered ? 'currentColor' : 'none'}
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  className="h-5 w-5"
-                  aria-hidden
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2Z"
-                  />
-                </svg>
-              </button>
-            )}
             <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${profColor}`}>
               {mastered && '★ '}
               {getProficiencyLabel(word.proficiency)}

@@ -1,15 +1,12 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import ProficiencyStars from '../components/ProficiencyStars'
 import { getWord } from '../lib/db'
 import { speakWord, speakWordAuto, isSpeechSupported } from '../lib/audio'
 import { getTextInLanguage } from '../lib/translations'
-import {
-  getProficiencyLabel,
-  getProficiencyProgress,
-  isMasteredWord,
-} from '../lib/proficiency'
+import { useWordStore } from '../store/words'
 import type { Language, Word } from '../types/word'
-import { ALL_LANGUAGES, LANGUAGE_LABELS, MAX_PROFICIENCY } from '../types/word'
+import { ALL_LANGUAGES, LANGUAGE_LABELS } from '../types/word'
 
 const LANG_COLORS: Record<Language, string> = {
   zh: 'border-red-100 bg-red-50',
@@ -20,7 +17,16 @@ const LANG_COLORS: Record<Language, string> = {
 
 export default function WordDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const location = useLocation()
+  const fromStudy = (location.state as { from?: string } | null)?.from === '/study'
+  const setProficiency = useWordStore((s) => s.setProficiency)
   const [word, setWord] = useState<Word | null>(null)
+
+  const handleSetProficiency = async (value: number) => {
+    if (!word) return
+    await setProficiency(word.id, value)
+    setWord({ ...word, proficiency: value })
+  }
 
   useEffect(() => {
     if (id) getWord(id).then((w) => setWord(w ?? null))
@@ -42,14 +48,13 @@ export default function WordDetailPage() {
     )
   }
 
-  const mastered = isMasteredWord(word.proficiency)
-  const profTextColor = mastered ? 'text-amber-700' : 'text-brand-600'
-  const progress = getProficiencyProgress(word.proficiency)
-
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <Link to="/words" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-brand-600">
-        ← 返回单词表
+      <Link
+        to={fromStudy ? '/study' : '/words'}
+        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-brand-600"
+      >
+        {fromStudy ? '返回背单词' : '返回单词表'}
       </Link>
 
       <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -138,54 +143,37 @@ export default function WordDetailPage() {
 
           <section className="space-y-4">
             <div className="rounded-2xl bg-slate-50 p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    熟练度
-                  </p>
-                  <p className={`mt-1 text-lg font-semibold ${profTextColor}`}>
-                    {mastered && '★ '}
-                    {getProficiencyLabel(word.proficiency)}
-                  </p>
-                </div>
-                <p className="text-sm text-slate-500">
-                  {word.proficiency}/{MAX_PROFICIENCY}
-                </p>
-              </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
-                <div
-                  className={`h-full rounded-full transition-all ${
-                    mastered ? 'bg-amber-500' : 'bg-brand-600'
-                  }`}
-                  style={{ width: `${progress}%` }}
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+                熟练度
+              </h2>
+              <div className="mt-3 flex justify-center">
+                <ProficiencyStars
+                  proficiency={word.proficiency}
+                  onChange={handleSetProficiency}
+                  size="lg"
                 />
               </div>
-              <p className="mt-2 text-xs text-slate-500">
-                {mastered
-                  ? '已是熟词，继续复习可保持记忆'
-                  : `再答对 ${MAX_PROFICIENCY - word.proficiency} 次可成为熟词`}
-              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <div className="rounded-xl bg-slate-50 p-4">
-              <p className="text-xs text-slate-400">复习次数</p>
-              <p className="mt-1 font-semibold text-slate-800">{word.reviewCount}</p>
-            </div>
-            <div className="rounded-xl bg-slate-50 p-4">
-              <p className="text-xs text-slate-400">添加日期</p>
-              <p className="mt-1 font-semibold text-slate-800">
-                {new Date(word.createdAt).toLocaleDateString('zh-CN')}
-              </p>
-            </div>
-            {word.keySyllables && (
               <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs text-slate-400">关键音节</p>
-                <p className="mt-1 font-mono font-semibold text-slate-800">
-                  {word.keySyllables}
+                <p className="text-xs text-slate-400">复习次数</p>
+                <p className="mt-1 font-semibold text-slate-800">{word.reviewCount}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs text-slate-400">添加日期</p>
+                <p className="mt-1 font-semibold text-slate-800">
+                  {new Date(word.createdAt).toLocaleDateString('zh-CN')}
                 </p>
               </div>
-            )}
+              {word.keySyllables && (
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-400">关键音节</p>
+                  <p className="mt-1 font-mono font-semibold text-slate-800">
+                    {word.keySyllables}
+                  </p>
+                </div>
+              )}
             </div>
           </section>
 

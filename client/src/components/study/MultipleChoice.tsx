@@ -1,19 +1,33 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { QuizQuestion } from '../../lib/study'
 import type { StudyMode } from '../../types/word'
 import { LANGUAGE_SHORT } from '../../types/word'
 import { playAnswerFeedback, speakWord, speakWordAuto } from '../../lib/audio'
+import ProficiencyHearts from '../ProficiencyHearts'
 import SpanishPronunciation from './SpanishPronunciation'
 
 interface MultipleChoiceProps {
   question: QuizQuestion
   mode: StudyMode
-  onAnswer: (correct: boolean) => void
+  onAnswer: (correct: boolean, selected?: string) => void | Promise<void>
+  onContinue?: () => void
+  reviewProficiency?: { previous: number; next: number } | null
+  onViewWordCard?: (selected: string) => void
+  restoredWrong?: { selected: string }
 }
 
-export default function MultipleChoice({ question, mode, onAnswer }: MultipleChoiceProps) {
-  const [selected, setSelected] = useState<string | null>(null)
-  const [revealed, setRevealed] = useState(false)
+export default function MultipleChoice({
+  question,
+  mode,
+  onAnswer,
+  onContinue,
+  reviewProficiency,
+  onViewWordCard,
+  restoredWrong,
+}: MultipleChoiceProps) {
+  const [selected, setSelected] = useState<string | null>(restoredWrong?.selected ?? null)
+  const [revealed, setRevealed] = useState(!!restoredWrong)
 
   const handleSelect = (text: string) => {
     if (revealed) return
@@ -21,7 +35,11 @@ export default function MultipleChoice({ question, mode, onAnswer }: MultipleCho
     setRevealed(true)
     const correct = text === question.answer
     playAnswerFeedback(correct)
-    setTimeout(() => onAnswer(correct), 800)
+    if (correct) {
+      setTimeout(() => void onAnswer(correct), 800)
+      return
+    }
+    void onAnswer(correct, text)
   }
 
   const isToWord = mode === 'choice-to-word'
@@ -50,7 +68,7 @@ export default function MultipleChoice({ question, mode, onAnswer }: MultipleCho
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+      <div className="grid gap-3">
         {question.options?.map((option) => {
           let style = 'bg-white ring-1 ring-slate-200 hover:ring-brand-300 hover:bg-brand-50'
           if (revealed && option.text === question.answer) {
@@ -67,7 +85,7 @@ export default function MultipleChoice({ question, mode, onAnswer }: MultipleCho
               type="button"
               disabled={revealed}
               onClick={() => handleSelect(option.text)}
-              className={`rounded-xl px-3 py-3 text-left transition-all sm:rounded-2xl sm:px-4 sm:py-3.5 ${style}`}
+              className={`rounded-2xl px-4 py-4 text-left transition-all ${style}`}
             >
               {mixed && (
                 <span className="mb-1 inline-block rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
@@ -79,6 +97,34 @@ export default function MultipleChoice({ question, mode, onAnswer }: MultipleCho
           )
         })}
       </div>
+
+      {revealed && selected !== question.answer && (
+        <div className="space-y-4">
+          {reviewProficiency && (
+            <ProficiencyHearts
+              proficiency={reviewProficiency.next}
+              previous={reviewProficiency.previous}
+            />
+          )}
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Link
+              to={`/words/${question.word.id}`}
+              state={{ from: '/study' }}
+              onClick={() => selected && onViewWordCard?.(selected)}
+              className="rounded-xl bg-white px-5 py-2.5 text-center text-sm font-semibold text-brand-700 ring-1 ring-brand-200 transition-colors hover:bg-brand-50"
+            >
+              查看单词卡
+            </Link>
+            <button
+              type="button"
+              onClick={onContinue}
+              className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              下一题
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

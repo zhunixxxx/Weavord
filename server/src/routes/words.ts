@@ -64,6 +64,15 @@ export function createWordsRouter(repo: WordRepository) {
     res.json(repo.getWord(req.params.id))
   })
 
+  router.delete('/:id/master', (req, res) => {
+    const ok = repo.unmarkWordAsMastered(req.params.id)
+    if (!ok) {
+      res.status(404).json({ error: '单词不存在或不是熟词' })
+      return
+    }
+    res.json(repo.getWord(req.params.id))
+  })
+
   router.delete('/', (_req, res) => {
     const deleted = repo.deleteAllWords()
     res.json({ deleted })

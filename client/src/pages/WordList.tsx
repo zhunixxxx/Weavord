@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import WordCard from '../components/WordCard'
 import SortControls from '../components/SortControls'
-import { useWordStore } from '../store/words'
+import { sortWords } from '../lib/db'
 import { getAllSearchableText } from '../lib/translations'
+import { useWordStore } from '../store/words'
 
 export default function WordListPage() {
   const loadWords = useWordStore((s) => s.loadWords)
@@ -10,16 +11,19 @@ export default function WordListPage() {
   const sortOrder = useWordStore((s) => s.sortOrder)
   const setSort = useWordStore((s) => s.setSort)
   const removeWord = useWordStore((s) => s.removeWord)
-  const markAsMastered = useWordStore((s) => s.markAsMastered)
-  const getSortedWords = useWordStore((s) => s.getSortedWords)
   const loading = useWordStore((s) => s.loading)
+  const rawWords = useWordStore((s) => s.words)
   const [search, setSearch] = useState('')
 
   useEffect(() => {
     loadWords()
   }, [loadWords])
 
-  const words = getSortedWords()
+  const words = useMemo(
+    () => sortWords(rawWords, sortField, sortOrder),
+    [rawWords, sortField, sortOrder],
+  )
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return words
@@ -57,7 +61,6 @@ export default function WordListPage() {
               key={word.id}
               word={word}
               onDelete={removeWord}
-              onMarkMastered={markAsMastered}
             />
           ))}
         </div>

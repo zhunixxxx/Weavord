@@ -49,6 +49,9 @@ export function getReviewFeedback(
   if (next < previous) {
     return `熟练度 -1 → ${getProficiencyLabel(next)}`
   }
+  if (!correct && next === previous && previous === 0) {
+    return '已是最低熟练度，不再扣除'
+  }
   if (correct && isMasteredWord(next)) {
     return '熟词复习正确，保持熟练 ★'
   }

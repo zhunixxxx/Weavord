@@ -71,6 +71,15 @@ export async function markWordAsMastered(id: string): Promise<boolean> {
   }
 }
 
+export async function unmarkWordAsMastered(id: string): Promise<boolean> {
+  try {
+    await request(`/words/${id}/master`, { method: 'DELETE' })
+    return true
+  } catch {
+    return false
+  }
+}
+
 export async function deleteWord(id: string): Promise<void> {
   await request(`/words/${id}`, { method: 'DELETE' })
 }
