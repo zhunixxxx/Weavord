@@ -1,4 +1,5 @@
 import type { Language } from '../types/word'
+import { isAutoSpeakEnabled } from './settings'
 import { getLanguageVoice, getSpeechLangPrefix } from './study'
 
 let voicesLoaded = false
@@ -48,6 +49,17 @@ function pickVoice(lang: Language): SpeechSynthesisVoice | null {
 }
 
 export async function speakWord(text: string, language: Language): Promise<void> {
+  if (!('speechSynthesis' in window)) return
+
+  await speakWordInternal(text, language)
+}
+
+export async function speakWordAuto(text: string, language: Language): Promise<void> {
+  if (!isAutoSpeakEnabled()) return
+  return speakWordInternal(text, language)
+}
+
+async function speakWordInternal(text: string, language: Language): Promise<void> {
   if (!('speechSynthesis' in window)) return
 
   if (!voicesLoaded) {

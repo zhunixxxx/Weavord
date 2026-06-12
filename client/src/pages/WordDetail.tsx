@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { getWord } from '../lib/db'
-import { speakWord, isSpeechSupported } from '../lib/audio'
+import { speakWord, speakWordAuto, isSpeechSupported } from '../lib/audio'
 import { getTextInLanguage } from '../lib/translations'
 import {
   getProficiencyLabel,
@@ -25,6 +25,11 @@ export default function WordDetailPage() {
   useEffect(() => {
     if (id) getWord(id).then((w) => setWord(w ?? null))
   }, [id])
+
+  useEffect(() => {
+    if (!word) return
+    void speakWordAuto(word.word, word.language)
+  }, [word?.id, word?.word, word?.language])
 
   if (!word) {
     return (

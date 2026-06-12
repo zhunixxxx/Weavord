@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { QuizQuestion } from '../../lib/study'
 import type { StudyMode } from '../../types/word'
 import { LANGUAGE_LABELS, LANGUAGE_SHORT } from '../../types/word'
-import { speakWord } from '../../lib/audio'
+import { speakWord, speakWordAuto } from '../../lib/audio'
 import SpanishPronunciation from './SpanishPronunciation'
 
 interface MultipleChoiceProps {
@@ -26,6 +26,12 @@ export default function MultipleChoice({ question, mode, onAnswer }: MultipleCho
   const isToWord = mode === 'choice-to-word'
   const promptLang = question.promptLanguage
   const mixed = question.mixedLanguageOptions
+
+  useEffect(() => {
+    if (isToWord) return
+    const lang = promptLang ?? question.word.language
+    void speakWordAuto(question.prompt, lang)
+  }, [isToWord, question.prompt, promptLang, question.word.language])
 
   const hint = isToWord
     ? `请选择对应的${question.answerLanguage ? LANGUAGE_LABELS[question.answerLanguage] : '外语'}单词`

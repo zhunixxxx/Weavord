@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { isSpeechSupported } from '../lib/audio'
+import { getSettings, setAutoSpeakEnabled } from '../lib/settings'
 import { useWordStore } from '../store/words'
 
-type SettingsSection = 'data'
+type SettingsSection = 'data' | 'audio'
 
 interface SettingsModalProps {
   open: boolean
@@ -9,11 +11,13 @@ interface SettingsModalProps {
 }
 
 const menuItems: { id: SettingsSection; label: string; icon: string }[] = [
+  { id: 'audio', label: '音频', icon: '🔊' },
   { id: 'data', label: '数据', icon: '🗂️' },
 ]
 
 export default function SettingsModal({ open, onClose }: SettingsModalProps) {
-  const [section, setSection] = useState<SettingsSection>('data')
+  const [section, setSection] = useState<SettingsSection>('audio')
+  const [autoSpeak, setAutoSpeak] = useState(() => getSettings().autoSpeak)
   const [deleting, setDeleting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const wordCount = useWordStore((s) => s.words.length)
@@ -109,6 +113,42 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 pb-6 sm:px-6 sm:pb-6">
+            {section === 'audio' && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-900">发音</h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    在「选释义」练习或打开单词详情时，自动朗读词条发音
+                  </p>
+                </div>
+
+                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                  <input
+                    type="checkbox"
+                    checked={!autoSpeak}
+                    onChange={(e) => {
+                      const enabled = !e.target.checked
+                      setAutoSpeak(enabled)
+                      setAutoSpeakEnabled(enabled)
+                    }}
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                  />
+                  <span>
+                    <span className="block font-medium text-slate-900">关闭自动发音</span>
+                    <span className="mt-1 block text-sm text-slate-500">
+                      开启后不再自动播放；手动点击 🔊 按钮仍可发音
+                    </span>
+                  </span>
+                </label>
+
+                {!isSpeechSupported() && (
+                  <p className="text-sm text-amber-600">
+                    当前浏览器不支持语音合成，发音功能可能不可用
+                  </p>
+                )}
+              </div>
+            )}
+
             {section === 'data' && (
               <div className="space-y-4">
                 <div>

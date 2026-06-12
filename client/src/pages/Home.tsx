@@ -22,11 +22,11 @@ export default function HomePage() {
 
   const cards = [
     {
-      to: '/import',
-      icon: '📥',
-      title: '批量导入',
-      desc: '导入西语单词及中/英/日释义',
-      color: 'from-violet-500 to-indigo-600',
+      to: '/study',
+      icon: '✏️',
+      title: '开始背诵',
+      desc: '四选一混合考查中/英/日释义',
+      color: 'from-orange-500 to-rose-600',
     },
     {
       to: '/words',
@@ -36,11 +36,11 @@ export default function HomePage() {
       color: 'from-emerald-500 to-teal-600',
     },
     {
-      to: '/study',
-      icon: '✏️',
-      title: '开始背诵',
-      desc: '四选一混合考查中/英/日释义',
-      color: 'from-orange-500 to-rose-600',
+      to: '/import',
+      icon: '📥',
+      title: '批量导入',
+      desc: '导入西语单词及中/英/日释义',
+      color: 'from-violet-500 to-indigo-600',
     },
   ]
 
