@@ -2,10 +2,12 @@ const STORAGE_KEY = 'weavord-settings'
 
 export interface AppSettings {
   autoSpeak: boolean
+  soundEffects: boolean
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
   autoSpeak: true,
+  soundEffects: true,
 }
 
 function loadSettings(): AppSettings {
@@ -29,6 +31,14 @@ export function isAutoSpeakEnabled(): boolean {
 
 export function setAutoSpeakEnabled(enabled: boolean): void {
   saveSettings({ ...loadSettings(), autoSpeak: enabled })
+}
+
+export function isSoundEffectsEnabled(): boolean {
+  return loadSettings().soundEffects
+}
+
+export function setSoundEffectsEnabled(enabled: boolean): void {
+  saveSettings({ ...loadSettings(), soundEffects: enabled })
 }
 
 export function getSettings(): AppSettings {

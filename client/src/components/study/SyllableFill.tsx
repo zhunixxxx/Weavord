@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import type { QuizQuestion } from '../../lib/study'
 import { checkAnswer } from '../../lib/study'
-import { speakWord } from '../../lib/audio'
+import { playAnswerFeedback, speakWord } from '../../lib/audio'
 import SpanishPronunciation from './SpanishPronunciation'
 
 interface SyllableFillProps {
@@ -20,6 +20,7 @@ export default function SyllableFill({ question, onAnswer }: SyllableFillProps) 
     if (revealed || !input.trim()) return
     setRevealed(true)
     const isCorrect = checkAnswer(question, input, 'syllable-fill')
+    playAnswerFeedback(isCorrect)
     setTimeout(() => onAnswer(isCorrect), 1000)
   }
 

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import type { QuizQuestion } from '../../lib/study'
 import { checkAnswer } from '../../lib/study'
-import { speakWord } from '../../lib/audio'
+import { playAnswerFeedback, speakWord } from '../../lib/audio'
 
 interface FullDictationProps {
   question: QuizQuestion
@@ -19,6 +19,7 @@ export default function FullDictation({ question, onAnswer }: FullDictationProps
     if (revealed || !input.trim()) return
     setRevealed(true)
     const isCorrect = checkAnswer(question, input, 'full-dictation')
+    playAnswerFeedback(isCorrect)
     setTimeout(() => onAnswer(isCorrect), 1000)
   }
 

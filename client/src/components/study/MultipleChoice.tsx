@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { QuizQuestion } from '../../lib/study'
 import type { StudyMode } from '../../types/word'
 import { LANGUAGE_SHORT } from '../../types/word'
-import { speakWord, speakWordAuto } from '../../lib/audio'
+import { playAnswerFeedback, speakWord, speakWordAuto } from '../../lib/audio'
 import SpanishPronunciation from './SpanishPronunciation'
 
 interface MultipleChoiceProps {
@@ -20,6 +20,7 @@ export default function MultipleChoice({ question, mode, onAnswer }: MultipleCho
     setSelected(text)
     setRevealed(true)
     const correct = text === question.answer
+    playAnswerFeedback(correct)
     setTimeout(() => onAnswer(correct), 800)
   }
 

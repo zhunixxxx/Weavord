@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import ConfirmDialog from './ConfirmDialog'
 import { isSpeechSupported } from '../lib/audio'
-import { getSettings, setAutoSpeakEnabled } from '../lib/settings'
+import { getSettings, setAutoSpeakEnabled, setSoundEffectsEnabled } from '../lib/settings'
 import { useWordStore } from '../store/words'
 
 type SettingsSection = 'data' | 'audio'
@@ -18,32 +19,39 @@ const menuItems: { id: SettingsSection; label: string; icon: string }[] = [
 export default function SettingsModal({ open, onClose }: SettingsModalProps) {
   const [section, setSection] = useState<SettingsSection>('audio')
   const [autoSpeak, setAutoSpeak] = useState(() => getSettings().autoSpeak)
+  const [soundEffects, setSoundEffects] = useState(() => getSettings().soundEffects)
   const [deleting, setDeleting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const wordCount = useWordStore((s) => s.words.length)
   const clearAllWords = useWordStore((s) => s.clearAllWords)
   const loadWords = useWordStore((s) => s.loadWords)
 
   useEffect(() => {
-    if (open) loadWords()
+    if (!open) return
+    loadWords()
+    const settings = getSettings()
+    setAutoSpeak(settings.autoSpeak)
+    setSoundEffects(settings.soundEffects)
   }, [open, loadWords])
 
   if (!open) return null
 
-  const handleDeleteAll = async () => {
+  const handleDeleteAll = () => {
     if (wordCount === 0) {
       setMessage('当前没有单词可删除')
       return
     }
-    if (!window.confirm(`确定删除全部 ${wordCount} 个单词？此操作不可恢复。`)) {
-      return
-    }
+    setConfirmOpen(true)
+  }
 
+  const handleConfirmDelete = async () => {
     setDeleting(true)
     setMessage(null)
     try {
       const count = await clearAllWords()
       setMessage(`已删除 ${count} 个单词`)
+      setConfirmOpen(false)
     } finally {
       setDeleting(false)
     }
@@ -146,6 +154,32 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                     当前浏览器不支持语音合成，发音功能可能不可用
                   </p>
                 )}
+
+                <div className="border-t border-slate-200 pt-4">
+                  <h3 className="text-base font-semibold text-slate-900">音效</h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    答题反馈与完成本轮背诵时的提示音
+                  </p>
+                </div>
+
+                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                  <input
+                    type="checkbox"
+                    checked={!soundEffects}
+                    onChange={(e) => {
+                      const enabled = !e.target.checked
+                      setSoundEffects(enabled)
+                      setSoundEffectsEnabled(enabled)
+                    }}
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                  />
+                  <span>
+                    <span className="block font-medium text-slate-900">关闭答题音效</span>
+                    <span className="mt-1 block text-sm text-slate-500">
+                      关闭后不再播放答对、答错及完成背诵的提示音
+                    </span>
+                  </span>
+                </label>
               </div>
             )}
 
@@ -182,6 +216,17 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="删除所有单词"
+        message={`确定删除全部 ${wordCount} 个单词？此操作不可恢复。`}
+        confirmLabel="删除"
+        variant="danger"
+        loading={deleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   )
 }

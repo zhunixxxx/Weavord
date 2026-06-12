@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import MultipleChoice from '../components/study/MultipleChoice'
 import SyllableFill from '../components/study/SyllableFill'
 import FullDictation from '../components/study/FullDictation'
+import { playStudyCompleteFeedback } from '../lib/audio'
 import { buildQuestion, pickStudyBatch, type QuizQuestion } from '../lib/study'
 import { getReviewFeedback } from '../lib/proficiency'
 import { useWordStore } from '../store/words'
@@ -60,6 +61,7 @@ export default function StudyPage() {
 
     const nextIndex = index + 1
     if (nextIndex >= batch.length) {
+      playStudyCompleteFeedback()
       setPhase('done')
       setQuestion(null)
       setReviewFeedback(null)
