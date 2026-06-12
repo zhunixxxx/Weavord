@@ -120,9 +120,9 @@ export default function StudyPage() {
     const isChoice = mode === 'choice-to-meaning' || mode === 'choice-to-word'
 
     return (
-      <div className="mx-auto max-w-xl space-y-6">
+      <div className="mx-auto max-w-xl space-y-4">
         <div>
-          <div className="mb-2 flex items-center justify-between text-sm text-slate-500">
+          <div className="mb-1.5 flex items-center justify-between text-xs text-slate-500 sm:mb-2 sm:text-sm">
             <span>{STUDY_MODE_LABELS[mode]}</span>
             <span>
               {index + 1} / {batch.length}
