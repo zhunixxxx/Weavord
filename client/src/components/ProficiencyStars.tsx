@@ -3,6 +3,7 @@ import { MAX_PROFICIENCY } from '../types/word'
 
 interface ProficiencyStarsProps {
   proficiency: number
+  previous?: number
   onChange?: (value: number) => void
   size?: 'sm' | 'md' | 'lg'
   className?: string
@@ -11,27 +12,32 @@ interface ProficiencyStarsProps {
 function StarIcon({
   filled,
   preview,
+  dimmed,
   size,
 }: {
   filled: boolean
   preview?: boolean
+  dimmed?: boolean
   size: 'sm' | 'md' | 'lg'
 }) {
   const sizeClass =
     size === 'sm' ? 'h-4 w-4' : size === 'md' ? 'h-5 w-5' : 'h-8 w-8'
+  const showFill = filled || preview || dimmed
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill={filled || preview ? 'currentColor' : 'none'}
+      fill={showFill ? 'currentColor' : 'none'}
       stroke="currentColor"
       strokeWidth="1.75"
       className={`${sizeClass} transition-colors ${
-        filled
-          ? 'text-amber-500'
-          : preview
-            ? 'text-amber-300'
-            : 'text-slate-300'
+        dimmed
+          ? 'text-amber-300'
+          : filled
+            ? 'text-amber-500'
+            : preview
+              ? 'text-amber-300'
+              : 'text-slate-300'
       }`}
       aria-hidden
     >
@@ -46,6 +52,7 @@ function StarIcon({
 
 export default function ProficiencyStars({
   proficiency,
+  previous,
   onChange,
   size = 'sm',
   className = '',
@@ -54,7 +61,7 @@ export default function ProficiencyStars({
   const [hover, setHover] = useState<number | null>(null)
   const interactive = Boolean(onChange)
   const display = hover ?? level
-  const gapClass = size === 'lg' ? 'gap-1.5' : 'gap-0.5'
+  const gapClass = size === 'lg' ? 'gap-1.5' : size === 'md' ? 'gap-1' : 'gap-0.5'
 
   const handleClick = (value: number) => {
     if (!onChange) return
@@ -71,7 +78,13 @@ export default function ProficiencyStars({
       {Array.from({ length: MAX_PROFICIENCY }, (_, i) => {
         const starValue = i + 1
         const filled = starValue <= display
-        const preview = hover != null && starValue <= hover && starValue > level
+        const preview = interactive && hover != null && starValue <= hover && starValue > level
+        const dimmed =
+          !interactive &&
+          previous != null &&
+          previous > level &&
+          starValue > level &&
+          starValue <= previous
 
         if (interactive) {
           return (
@@ -90,7 +103,14 @@ export default function ProficiencyStars({
           )
         }
 
-        return <StarIcon key={starValue} filled={filled} size={size} />
+        return (
+          <StarIcon
+            key={starValue}
+            filled={filled}
+            dimmed={dimmed}
+            size={size}
+          />
+        )
       })}
     </div>
   )

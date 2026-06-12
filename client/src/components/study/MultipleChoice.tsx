@@ -4,7 +4,7 @@ import type { QuizQuestion } from '../../lib/study'
 import type { StudyMode } from '../../types/word'
 import { LANGUAGE_SHORT } from '../../types/word'
 import { playAnswerFeedback, speakWord, speakWordAuto } from '../../lib/audio'
-import ProficiencyHearts from '../ProficiencyHearts'
+import ProficiencyStars from '../ProficiencyStars'
 import SpanishPronunciation from './SpanishPronunciation'
 
 interface MultipleChoiceProps {
@@ -101,10 +101,13 @@ export default function MultipleChoice({
       {revealed && selected !== question.answer && (
         <div className="space-y-4">
           {reviewProficiency && (
-            <ProficiencyHearts
-              proficiency={reviewProficiency.next}
-              previous={reviewProficiency.previous}
-            />
+            <div className="flex justify-center">
+              <ProficiencyStars
+                proficiency={reviewProficiency.next}
+                previous={reviewProficiency.previous}
+                size="md"
+              />
+            </div>
           )}
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link
