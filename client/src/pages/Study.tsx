@@ -4,6 +4,7 @@ import MultipleChoice from '../components/study/MultipleChoice'
 import SyllableFill from '../components/study/SyllableFill'
 import FullDictation from '../components/study/FullDictation'
 import { buildQuestion, pickStudyBatch, type QuizQuestion } from '../lib/study'
+import { getReviewFeedback } from '../lib/proficiency'
 import { useWordStore } from '../store/words'
 import type { StudyMode } from '../types/word'
 import { STUDY_MODE_LABELS } from '../types/word'
@@ -27,6 +28,7 @@ export default function StudyPage() {
   const [index, setIndex] = useState(0)
   const [question, setQuestion] = useState<QuizQuestion | null>(null)
   const [score, setScore] = useState({ correct: 0, total: 0 })
+  const [reviewFeedback, setReviewFeedback] = useState<string | null>(null)
 
   useEffect(() => {
     loadWords()
@@ -39,13 +41,17 @@ export default function StudyPage() {
     setBatch(selected)
     setIndex(0)
     setScore({ correct: 0, total: 0 })
+    setReviewFeedback(null)
     setQuestion(buildQuestion(selected[0], words, mode))
     setPhase('study')
   }
 
   const handleAnswer = async (correct: boolean) => {
     const current = batch[index]
-    await recordReview(current.id, correct)
+    const result = await recordReview(current.id, correct)
+    if (result) {
+      setReviewFeedback(getReviewFeedback(result.previous, result.proficiency, correct))
+    }
     const newScore = {
       correct: score.correct + (correct ? 1 : 0),
       total: score.total + 1,
@@ -56,6 +62,7 @@ export default function StudyPage() {
     if (nextIndex >= batch.length) {
       setPhase('done')
       setQuestion(null)
+      setReviewFeedback(null)
       return
     }
 
@@ -129,6 +136,12 @@ export default function StudyPage() {
           </div>
         </div>
 
+        {reviewFeedback && (
+          <p className="rounded-xl bg-brand-50 px-4 py-2.5 text-center text-sm font-medium text-brand-800">
+            {reviewFeedback}
+          </p>
+        )}
+
         {isChoice && (
           <MultipleChoice
             key={`${index}-${question.word.id}`}
@@ -151,7 +164,7 @@ export default function StudyPage() {
     <div className="mx-auto max-w-lg space-y-8">
       <div>
         <h2 className="text-2xl font-bold text-slate-900">背单词</h2>
-        <p className="mt-1 text-slate-500">西语单词，四选一选项由中/英/日释义随机混合</p>
+        <p className="mt-1 text-slate-500">西语单词，答对提升熟练度，满级变为熟词</p>
       </div>
 
       <section className="space-y-3">

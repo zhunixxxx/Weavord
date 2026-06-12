@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import type { QuizQuestion } from '../../lib/study'
 import { checkAnswer } from '../../lib/study'
 import { speakWord } from '../../lib/audio'
+import SpanishPronunciation from './SpanishPronunciation'
 
 interface SyllableFillProps {
   question: QuizQuestion
@@ -30,6 +31,7 @@ export default function SyllableFill({ question, onAnswer }: SyllableFillProps) 
         <p className="mt-4 font-mono text-3xl tracking-widest text-brand-700">
           {question.syllableTemplate}
         </p>
+        <SpanishPronunciation question={question} alwaysShow className="mt-2 font-mono text-base text-slate-500" />
         <button
           type="button"
           onClick={() => speakWord(question.word.word, question.word.language)}

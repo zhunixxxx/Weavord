@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { SortField, SortOrder, Word } from '../types/word'
+import { MAX_PROFICIENCY } from '../types/word'
 import * as db from '../lib/db'
 
 interface WordStore {
@@ -15,7 +16,8 @@ interface WordStore {
   clearAllWords: () => Promise<number>
   setSort: (field: SortField, order?: SortOrder) => void
   getSortedWords: () => Word[]
-  recordReview: (id: string, correct: boolean) => Promise<void>
+  recordReview: (id: string, correct: boolean) => Promise<{ proficiency: number; previous: number } | null>
+  markAsMastered: (id: string) => Promise<void>
 }
 
 export const useWordStore = create<WordStore>((set, get) => ({
@@ -61,7 +63,19 @@ export const useWordStore = create<WordStore>((set, get) => ({
   },
 
   recordReview: async (id, correct) => {
-    await db.recordReview(id, correct)
+    const result = await db.recordReview(id, correct)
     await get().loadWords()
+    return result
+  },
+
+  markAsMastered: async (id) => {
+    const updated = await db.markWordAsMastered(id)
+    if (updated) {
+      set({
+        words: get().words.map((w) =>
+          w.id === id ? { ...w, proficiency: MAX_PROFICIENCY } : w,
+        ),
+      })
+    }
   },
 }))

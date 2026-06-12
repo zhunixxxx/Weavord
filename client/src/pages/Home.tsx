@@ -1,25 +1,24 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { getStats } from '../lib/db'
+import { countMasteredWords, countTodayStudiedWords } from '../lib/proficiency'
 import { useWordStore } from '../store/words'
 
 export default function HomePage() {
   const loadWords = useWordStore((s) => s.loadWords)
-  const total = useWordStore((s) => s.words.length)
-  const [stats, setStats] = useState({ total: 0, mastered: 0 })
+  const words = useWordStore((s) => s.words)
+  const [stats, setStats] = useState({ total: 0, mastered: 0, studiedToday: 0 })
 
   useEffect(() => {
     loadWords()
-    getStats().then(setStats)
   }, [loadWords])
 
   useEffect(() => {
-    const words = useWordStore.getState().words
     setStats({
-      total,
-      mastered: words.filter((w) => w.proficiency >= 4).length,
+      total: words.length,
+      mastered: countMasteredWords(words),
+      studiedToday: countTodayStudiedWords(words),
     })
-  }, [total])
+  }, [words])
 
   const cards = [
     {
@@ -48,14 +47,15 @@ export default function HomePage() {
   return (
     <div className="space-y-8">
       <section className="rounded-3xl bg-gradient-to-br from-brand-600 to-indigo-700 p-6 text-white shadow-lg sm:p-8">
-        <h2 className="text-2xl font-bold sm:text-3xl">欢迎回来 👋</h2>
+        <h2 className="text-2xl font-bold sm:text-3xl">Bienvenidos 👋</h2>
         <p className="mt-2 max-w-lg text-brand-100">
-          Weavord 专注西班牙语背单词，支持中/英/日多语释义与多种练习模式。
+          西班牙语背单词，支持中/英/日多语释义与多种练习模式。
         </p>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-2">
+        <div className="mt-6 grid grid-cols-3 gap-3">
           {[
+            { label: '今日已背', value: stats.studiedToday },
             { label: '西语词数', value: stats.total },
-            { label: '已精通', value: stats.mastered },
+            { label: '熟词', value: stats.mastered },
           ].map((s) => (
             <div key={s.label} className="rounded-2xl bg-white/15 px-4 py-3 backdrop-blur-sm">
               <p className="text-2xl font-bold">{s.value}</p>

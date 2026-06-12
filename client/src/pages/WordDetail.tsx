@@ -3,8 +3,13 @@ import { useEffect, useState } from 'react'
 import { getWord } from '../lib/db'
 import { speakWord, isSpeechSupported } from '../lib/audio'
 import { getTextInLanguage } from '../lib/translations'
+import {
+  getProficiencyLabel,
+  getProficiencyProgress,
+  isMasteredWord,
+} from '../lib/proficiency'
 import type { Language, Word } from '../types/word'
-import { ALL_LANGUAGES, LANGUAGE_LABELS, PROFICIENCY_LABELS } from '../types/word'
+import { ALL_LANGUAGES, LANGUAGE_LABELS, MAX_PROFICIENCY } from '../types/word'
 
 const LANG_COLORS: Record<Language, string> = {
   zh: 'border-red-100 bg-red-50',
@@ -32,14 +37,9 @@ export default function WordDetailPage() {
     )
   }
 
-  const profColor = [
-    'text-slate-600',
-    'text-amber-600',
-    'text-yellow-600',
-    'text-emerald-600',
-    'text-teal-600',
-    'text-brand-600',
-  ][word.proficiency]
+  const mastered = isMasteredWord(word.proficiency)
+  const profTextColor = mastered ? 'text-amber-700' : 'text-brand-600'
+  const progress = getProficiencyProgress(word.proficiency)
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -131,13 +131,38 @@ export default function WordDetailPage() {
             </section>
           )}
 
-          <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-xl bg-slate-50 p-4">
-              <p className="text-xs text-slate-400">熟练度</p>
-              <p className={`mt-1 font-semibold ${profColor}`}>
-                {PROFICIENCY_LABELS[word.proficiency]}
+          <section className="space-y-4">
+            <div className="rounded-2xl bg-slate-50 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    熟练度
+                  </p>
+                  <p className={`mt-1 text-lg font-semibold ${profTextColor}`}>
+                    {mastered && '★ '}
+                    {getProficiencyLabel(word.proficiency)}
+                  </p>
+                </div>
+                <p className="text-sm text-slate-500">
+                  {word.proficiency}/{MAX_PROFICIENCY}
+                </p>
+              </div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    mastered ? 'bg-amber-500' : 'bg-brand-600'
+                  }`}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-slate-500">
+                {mastered
+                  ? '已是熟词，继续复习可保持记忆'
+                  : `再答对 ${MAX_PROFICIENCY - word.proficiency} 次可成为熟词`}
               </p>
             </div>
+
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div className="rounded-xl bg-slate-50 p-4">
               <p className="text-xs text-slate-400">复习次数</p>
               <p className="mt-1 font-semibold text-slate-800">{word.reviewCount}</p>
@@ -156,6 +181,7 @@ export default function WordDetailPage() {
                 </p>
               </div>
             )}
+            </div>
           </section>
 
           {!isSpeechSupported() && (

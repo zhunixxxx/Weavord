@@ -1,5 +1,5 @@
 import type { Language, StudyMode, Word } from '../types/word'
-import { LANGUAGE_LABELS } from '../types/word'
+import { LANGUAGE_LABELS, MAX_PROFICIENCY } from '../types/word'
 import {
   getOtherLanguages,
   getTextInLanguage,
@@ -225,14 +225,30 @@ function normalizeWord(s: string): string {
   return s.trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
-export function pickStudyBatch(
-  words: Word[],
-  count: number,
-  language?: Language,
-): Word[] {
-  let pool = language ? words.filter((w) => w.language === language) : words
-  if (pool.length === 0) pool = words
-  return shuffle(pool).slice(0, Math.min(count, pool.length))
+export function pickStudyBatch(words: Word[], count: number): Word[] {
+  const pool = [...words]
+  if (pool.length === 0) return []
+
+  const n = Math.min(count, pool.length)
+  const picked: Word[] = []
+
+  for (let i = 0; i < n; i++) {
+    const weights = pool.map((w) => MAX_PROFICIENCY - w.proficiency + 1)
+    const total = weights.reduce((a, b) => a + b, 0)
+    let r = Math.random() * total
+    let idx = 0
+    for (let j = 0; j < pool.length; j++) {
+      r -= weights[j]
+      if (r <= 0) {
+        idx = j
+        break
+      }
+    }
+    picked.push(pool[idx])
+    pool.splice(idx, 1)
+  }
+
+  return picked
 }
 
 const VOICE_MAP: Record<Language, string> = {

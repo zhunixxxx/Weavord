@@ -10,6 +10,7 @@ export default function WordListPage() {
   const sortOrder = useWordStore((s) => s.sortOrder)
   const setSort = useWordStore((s) => s.setSort)
   const removeWord = useWordStore((s) => s.removeWord)
+  const markAsMastered = useWordStore((s) => s.markAsMastered)
   const getSortedWords = useWordStore((s) => s.getSortedWords)
   const loading = useWordStore((s) => s.loading)
   const [search, setSearch] = useState('')
@@ -52,7 +53,12 @@ export default function WordListPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {filtered.map((word) => (
-            <WordCard key={word.id} word={word} onDelete={removeWord} />
+            <WordCard
+              key={word.id}
+              word={word}
+              onDelete={removeWord}
+              onMarkMastered={markAsMastered}
+            />
           ))}
         </div>
       )}

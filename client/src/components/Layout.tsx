@@ -2,13 +2,6 @@ import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import SettingsModal from './SettingsModal'
 
-const navItems = [
-  { to: '/', label: '首页', icon: '🏠', end: true },
-  { to: '/import', label: '导入', icon: '📥' },
-  { to: '/words', label: '单词表', icon: '📚' },
-  { to: '/study', label: '背单词', icon: '✏️' },
-]
-
 export default function Layout() {
   const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -26,28 +19,39 @@ export default function Layout() {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <nav className="hidden gap-1 md:flex">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  className={({ isActive }) =>
-                    `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-brand-50 text-brand-700'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                    }`
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                `rounded-xl p-2 transition-colors ${
+                  isActive
+                    ? 'bg-brand-50 text-brand-700'
+                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                }`
+              }
+              aria-label="首页"
+              title="首页"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                className="h-5 w-5"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m3 9.5 9-7 9 7M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"
+                />
+              </svg>
+            </NavLink>
             <button
               type="button"
               onClick={() => setSettingsOpen(true)}
-              className="ml-1 rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+              className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
               aria-label="设置"
               title="设置"
             >
@@ -79,26 +83,6 @@ export default function Layout() {
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6">
         <Outlet />
       </main>
-
-      <nav className="sticky bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)] md:hidden">
-        <div className="mx-auto flex max-w-lg justify-around px-2 py-2">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-xs transition-colors ${
-                  isActive ? 'text-brand-600' : 'text-slate-500'
-                }`
-              }
-            >
-              <span className="text-xl">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </NavLink>
-          ))}
-        </div>
-      </nav>
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>

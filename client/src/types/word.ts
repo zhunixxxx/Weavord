@@ -26,6 +26,7 @@ export interface Word {
   example?: string
   exampleTranslation?: string
   keySyllables?: string
+  /** 熟练度 0–5：陌生 → 熟词（5 为满级熟词） */
   proficiency: number
   createdAt: number
   lastReviewedAt?: number
@@ -46,13 +47,15 @@ export const MEANING_LANGUAGES: Language[] = ['zh', 'en', 'ja']
 
 export const ALL_LANGUAGES: Language[] = ['zh', 'en', 'ja', 'es']
 
+export const MAX_PROFICIENCY = 5
+
 export const PROFICIENCY_LABELS = [
   '陌生',
   '初识',
   '熟悉',
   '掌握',
   '熟练',
-  '精通',
+  '熟词',
 ] as const
 
 export const LANGUAGE_LABELS: Record<Language, string> = {

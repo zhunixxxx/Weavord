@@ -3,6 +3,7 @@ import type { QuizQuestion } from '../../lib/study'
 import type { StudyMode } from '../../types/word'
 import { LANGUAGE_LABELS, LANGUAGE_SHORT } from '../../types/word'
 import { speakWord } from '../../lib/audio'
+import SpanishPronunciation from './SpanishPronunciation'
 
 interface MultipleChoiceProps {
   question: QuizQuestion
@@ -44,7 +45,8 @@ export default function MultipleChoice({ question, mode, onAnswer }: MultipleCho
           </span>
         )}
         <p className="text-2xl font-semibold text-slate-900">{question.prompt}</p>
-        {!isToWord && question.promptLanguage && question.promptLanguage !== 'zh' && (
+        <SpanishPronunciation question={question} />
+        {!isToWord && question.promptLanguage === 'es' && (
           <button
             type="button"
             onClick={() => speakWord(question.prompt, question.promptLanguage!)}

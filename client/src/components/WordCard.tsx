@@ -1,31 +1,31 @@
 import { Link } from 'react-router-dom'
 import type { Word } from '../types/word'
-import { ALL_LANGUAGES, LANGUAGE_LABELS, PROFICIENCY_LABELS } from '../types/word'
+import { ALL_LANGUAGES, LANGUAGE_LABELS } from '../types/word'
 import { getTextInLanguage } from '../lib/translations'
+import { getProficiencyBadgeClass, getProficiencyLabel, isMasteredWord } from '../lib/proficiency'
 import { speakWord } from '../lib/audio'
 
 interface WordCardProps {
   word: Word
   onDelete?: (id: string) => void
+  onMarkMastered?: (id: string) => void
   compact?: boolean
 }
 
-export default function WordCard({ word, onDelete, compact }: WordCardProps) {
-  const profColor = [
-    'bg-slate-100 text-slate-600',
-    'bg-amber-50 text-amber-700',
-    'bg-yellow-50 text-yellow-700',
-    'bg-emerald-50 text-emerald-700',
-    'bg-teal-50 text-teal-700',
-    'bg-brand-50 text-brand-700',
-  ][word.proficiency]
+export default function WordCard({ word, onDelete, onMarkMastered, compact }: WordCardProps) {
+  const mastered = isMasteredWord(word.proficiency)
+  const profColor = getProficiencyBadgeClass(word.proficiency)
 
   const otherTranslations = ALL_LANGUAGES.filter((lang) => lang !== word.language)
     .map((lang) => ({ lang, text: getTextInLanguage(word, lang) }))
     .filter((item) => item.text)
 
   return (
-    <article className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
+    <article
+      className={`group rounded-2xl border bg-white p-4 shadow-sm transition-shadow hover:shadow-md ${
+        mastered ? 'border-amber-200 ring-1 ring-amber-100' : 'border-slate-200'
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -35,10 +35,44 @@ export default function WordCard({ word, onDelete, compact }: WordCardProps) {
             >
               {word.word}
             </Link>
+            {onMarkMastered && (
+              <button
+                type="button"
+                onClick={() => onMarkMastered(word.id)}
+                disabled={mastered}
+                className={`rounded-lg p-1 transition-colors ${
+                  mastered
+                    ? 'cursor-default text-amber-500'
+                    : 'text-slate-300 hover:bg-amber-50 hover:text-amber-500'
+                }`}
+                title={mastered ? '已是熟词' : '标记为熟词'}
+                aria-label={mastered ? '已是熟词' : '标记为熟词'}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill={mastered ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  className="h-5 w-5"
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2Z"
+                  />
+                </svg>
+              </button>
+            )}
             <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${profColor}`}>
-              {PROFICIENCY_LABELS[word.proficiency]}
+              {mastered && '★ '}
+              {getProficiencyLabel(word.proficiency)}
             </span>
           </div>
+          {word.pronunciation && (
+            <p className="mt-0.5 font-mono text-sm text-slate-500">{word.pronunciation}</p>
+          )}
           <div className="mt-2 flex flex-wrap gap-1.5">
             {otherTranslations.map(({ lang, text }) => (
               <span
@@ -52,9 +86,6 @@ export default function WordCard({ word, onDelete, compact }: WordCardProps) {
               </span>
             ))}
           </div>
-          {!compact && word.pronunciation && (
-            <p className="mt-2 font-mono text-sm text-slate-500">{word.pronunciation}</p>
-          )}
           {!compact && word.example && (
             <p className="mt-2 text-sm italic text-slate-600">"{word.example}"</p>
           )}
