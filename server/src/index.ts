@@ -2,6 +2,7 @@ import cors from 'cors'
 import express from 'express'
 import { resolve } from 'node:path'
 import { createWordRepository } from './db/words.js'
+import { createImportRouter } from './routes/import.js'
 import { createWordsRouter } from './routes/words.js'
 
 const PORT = Number(process.env.PORT) || 3001
@@ -19,6 +20,7 @@ app.get('/api/health', (_req, res) => {
 })
 
 app.use('/api/words', createWordsRouter(repo))
+app.use('/api/import', createImportRouter())
 
 app.use(
   (
@@ -28,7 +30,8 @@ app.use(
     _next: express.NextFunction,
   ) => {
     console.error(err)
-    res.status(500).json({ error: '服务器内部错误' })
+    const message = err instanceof Error ? err.message : '服务器内部错误'
+    res.status(500).json({ error: message })
   },
 )
 

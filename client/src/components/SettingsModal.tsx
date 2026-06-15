@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import ConfirmDialog from './ConfirmDialog'
 import { isSpeechSupported } from '../lib/audio'
 import { getSettings, setAutoSpeakEnabled, setSoundEffectsEnabled } from '../lib/settings'
+import { getDeepSeekApiKey, setDeepSeekApiKey } from '../lib/smartImport'
 import { useWordStore } from '../store/words'
 
-type SettingsSection = 'data' | 'audio'
+type SettingsSection = 'data' | 'audio' | 'ai'
 
 interface SettingsModalProps {
   open: boolean
@@ -13,6 +14,7 @@ interface SettingsModalProps {
 
 const menuItems: { id: SettingsSection; label: string; icon: string }[] = [
   { id: 'audio', label: '音频', icon: '🔊' },
+  { id: 'ai', label: 'AI 导入', icon: '✨' },
   { id: 'data', label: '数据', icon: '🗂️' },
 ]
 
@@ -20,6 +22,8 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
   const [section, setSection] = useState<SettingsSection>('audio')
   const [autoSpeak, setAutoSpeak] = useState(() => getSettings().autoSpeak)
   const [soundEffects, setSoundEffects] = useState(() => getSettings().soundEffects)
+  const [apiKey, setApiKey] = useState(() => getDeepSeekApiKey())
+  const [apiKeySaved, setApiKeySaved] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -33,6 +37,8 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
     const settings = getSettings()
     setAutoSpeak(settings.autoSpeak)
     setSoundEffects(settings.soundEffects)
+    setApiKey(getDeepSeekApiKey())
+    setApiKeySaved(false)
   }, [open, loadWords])
 
   if (!open) return null
@@ -55,6 +61,12 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
     } finally {
       setDeleting(false)
     }
+  }
+
+  const handleSaveApiKey = () => {
+    setDeepSeekApiKey(apiKey)
+    setApiKeySaved(true)
+    setMessage(null)
   }
 
   return (
@@ -180,6 +192,48 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                     </span>
                   </span>
                 </label>
+              </div>
+            )}
+
+            {section === 'ai' && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-900">DeepSeek API</h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    用于批量导入页的「智能导入」，将零散笔记转为标准 Markdown 表格
+                  </p>
+                </div>
+
+                <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                  <label htmlFor="settings-deepseek-api-key" className="block text-sm font-medium text-slate-900">
+                    API Key
+                  </label>
+                  <input
+                    id="settings-deepseek-api-key"
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => {
+                      setApiKey(e.target.value)
+                      setApiKeySaved(false)
+                    }}
+                    placeholder="sk-..."
+                    autoComplete="off"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Key 仅保存在本机浏览器；也可在服务端配置 DEEPSEEK_API_KEY 环境变量
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleSaveApiKey}
+                    className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+                  >
+                    保存
+                  </button>
+                  {apiKeySaved && (
+                    <p className="text-sm font-medium text-emerald-700">已保存</p>
+                  )}
+                </div>
               </div>
             )}
 
