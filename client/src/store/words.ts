@@ -66,7 +66,20 @@ export const useWordStore = create<WordStore>((set, get) => ({
 
   recordReview: async (id, correct) => {
     const result = await db.recordReview(id, correct)
-    await get().loadWords()
+    if (result) {
+      set({
+        words: get().words.map((w) =>
+          w.id === id
+            ? {
+                ...w,
+                proficiency: result.proficiency,
+                lastReviewedAt: Date.now(),
+                reviewCount: w.reviewCount + 1,
+              }
+            : w,
+        ),
+      })
+    }
     return result
   },
 
